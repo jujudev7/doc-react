@@ -27,3 +27,15 @@ body {
   content: "";
   display: table;
 }
+
+.status {
+  font-size: 1.3rem;
+  margin-bottom: 20px;
+}
+.winner {
+  color: green;
+  font-weight: bold;
+}
+.next-player {
+  color: coral;
+}
