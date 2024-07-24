@@ -10,14 +10,14 @@ function Square({ value, onSquareClick }) {
   );
 }
 
-export default function Board() {
-  const [squares, setSquares] = useState(Array(9).fill(null));
+function Board({ xIsNext, squares, onPlay }) {
+  // const [squares, setSquares] = useState(Array(9).fill(null));
   // Array(9).fill(null) crée un tableau de 9 éléments puis les définit tous à null.
   // L’appel useState() qui l’enrobe déclare une variable d’état squares qui vaut initialement ce tableau.
   // Chaque entrée du tableau correspond à la valeur d’une case.
   // Lorsque vous remplirez le plateau par la suite, le tableau aura une valeur ressemblant davantage à ceci :
   // ['O', null, 'X', 'X', 'X', 'O', 'O', null, null]
-  const [xIsNext, setXIsNext] = useState(true);
+  // const [xIsNext, setXIsNext] = useState(true);
 
   function handleClick(i) {
     if (squares[i] || calculateWinner(squares)) {
@@ -33,8 +33,7 @@ export default function Board() {
     } else {
       nextSquares[i] = "O";
     }
-    setSquares(nextSquares);
-    setXIsNext(!xIsNext);
+    onPlay(nextSquares);
   }
   // La fonction handleClick crée une copie du tableau squares (nextSquares) grâce à la méthode de tableau JavaScript slice().
   // Ensuite, handleClick met à jour le tableau nextSquares pour ajouter un X à la première case (index [0]).
@@ -52,7 +51,8 @@ export default function Board() {
     // status = "Prochain tour : " + (xIsNext ? "X" : "O");
     status = (
       <>
-        Prochain tour : <strong>{xIsNext ? "X" : "O"}</strong>
+        Prochain tour :{" "}
+        <span className="next-player-indicator">{xIsNext ? "X" : "O"}</span>
       </>
     );
     statusClass = "status next-player";
@@ -115,4 +115,46 @@ function calculateWinner(squares) {
     // Si la boucle termine toutes les itérations sans trouver de combinaison gagnante, la fonction retourne null pour indiquer qu'il n'y a pas de gagnant à ce stade du jeu.
   }
   return null;
+}
+
+export default function Game() {
+  const [history, setHistory] = useState([Array(9).fill(null)]);
+  const [currentMove, setCurrentMove] = useState(0);
+  const xIsNext = currentMove % 2 === 0;
+  const currentSquares = history[currentMove];
+
+  function handlePlay(nextSquares) {
+    const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
+    setHistory(nextHistory);
+    setCurrentMove(nextHistory.length - 1);
+  }
+
+  function jumpTo(nextMove) {
+    setCurrentMove(nextMove);
+  }
+
+  const moves = history.map((squares, move) => {
+    let description;
+    if (move > 0) {
+      description = "Aller au coup #" + move;
+    } else {
+      description = "Recommencer";
+    }
+    return (
+      <li key={move}>
+        <button onClick={() => jumpTo(move)}>{description}</button>
+      </li>
+    );
+  });
+
+  return (
+    <div className="game">
+      <div className="game-board">
+        <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
+      </div>
+      <div className="game-info">
+        <ol>{moves}</ol>
+      </div>
+    </div>
+  );
 }
